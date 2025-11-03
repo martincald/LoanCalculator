@@ -3,50 +3,65 @@ package com.martinpack;
 import java.text.NumberFormat;
 import java.util.Scanner;
 
-public class Main {
+public class Loan_Calculator {
+    static final byte MONTHS_IN_YEAR = 12;
+    static final byte PERCENT = 100;
+
     public static void main(String[] args) {
-        final byte MONTHS_IN_YEAR = 12;
-        final byte PERCENT = 100;
 
-        Scanner scanner = new Scanner(System.in);
+        int loanAmount = (int) readNumber("Loan Amount: ", 5000, 1_000_000);
+        float anualIntrestRate = (float) readNumber("Loan Anual intrest rate: " , 1, 30);
+        byte years = (byte) readNumber("Loan period (years): ", 1, 80);
 
-        System.out.println("Loan Amount (R$5K - R$1M) : ");
-        int ammount;
-        while (true){
-            ammount = scanner.nextInt();
-            if (ammount >= 5_000 && ammount <= 1_000_000)
-                break;
-            System.out.println("Invalid amount. Chose a value between R$5K - R$1M");
-        }
-
-        System.out.println("Loan Anual intrest rate: ");
-        float anualIntrestRate;
-        float monthlyIntrestRate;
-        while (true) {
-            anualIntrestRate = scanner.nextFloat();
-            if (anualIntrestRate > 0 && anualIntrestRate <= 30)
-                break;
-            System.out.println("Invalid amount. Chose a value bigger than 0 and smaller than 30.");
-        }
-        monthlyIntrestRate = anualIntrestRate / PERCENT / MONTHS_IN_YEAR;
-
-        System.out.println("Loan Period (Years): ");
-        byte years;
-        int numberOfPayments;
-        while (true) {
-            years = scanner.nextByte();
-            if (years >= 1 && years <= 80)
-                break;
-            System.out.println("Invalid amount. Chose a value bigger than 1 and smaller than 80.");
-        }
-        numberOfPayments = years * MONTHS_IN_YEAR;
-
-        double loan = ammount * (monthlyIntrestRate * Math.pow(1 + monthlyIntrestRate, numberOfPayments)) / (Math.pow(1 + monthlyIntrestRate, numberOfPayments) - 1);
-        double totalPayments = loan * numberOfPayments;
+        double loan = calculateLoan(loanAmount, anualIntrestRate, years);
+        paymentSchedule(loanAmount, years, anualIntrestRate);
+        double totalPayment = loan * (years * 12); // Years * Months in year
 
         String loanFormated = NumberFormat.getCurrencyInstance().format(loan);
-        String totalPaymentsFormated = NumberFormat.getCurrencyInstance().format(totalPayments);
-        System.out.println("Total Payment: " + totalPaymentsFormated);
-        System.out.println("Monthly Payments: " + loanFormated);
+        String totalPaymentsFormated = NumberFormat.getCurrencyInstance().format(totalPayment);
+        System.out.println("-----------------\nTotal Payment: " + totalPaymentsFormated);
+        System.out.println("Monthly Payments: " + loanFormated + "\n-----------------");
+    }
+
+    public static double readNumber(String prompt, double min, double max){
+        Scanner scanner = new Scanner(System.in);
+        double value;
+        while (true) {
+            System.out.print(prompt);
+            value = scanner.nextFloat();
+            if (value >= min && value <= max)
+                break;
+            System.out.println("Invalid amount. Enter a value between " + min + " and " + max);
+        }
+        return value;
+    }
+
+    public static double calculateLoan(int loanAmount, float anualInterestRate, byte years) {
+
+        float monthlyIntrestRate = anualInterestRate / PERCENT / MONTHS_IN_YEAR;
+        short numberOfPayments = (short)(years * MONTHS_IN_YEAR);
+
+        return loanAmount * (monthlyIntrestRate * Math.pow(1 + monthlyIntrestRate,
+                numberOfPayments)) / (Math.pow(1 + monthlyIntrestRate, numberOfPayments) - 1);
+    }
+
+    public static void paymentSchedule(int loanAmount, byte years, float anualIntrestRate) {
+
+        int numberOfPayments = (years * MONTHS_IN_YEAR);
+        float monthlyInterestRate = anualIntrestRate / PERCENT / MONTHS_IN_YEAR;
+
+        double remainingBalance;
+        int paymentsMade = 0;
+        System.out.println("\n-----------------\nPayment schedule\n-----------------");
+        while (true) {
+            remainingBalance = loanAmount * (Math.pow(1 + monthlyInterestRate, numberOfPayments)
+                    - Math.pow(1 + monthlyInterestRate, paymentsMade))
+                    / (Math.pow(1 + monthlyInterestRate, numberOfPayments) - 1);
+            paymentsMade++;
+            if (remainingBalance == 0)
+                break;
+            System.out.println("Payment in month number " + paymentsMade + " is "
+                    + NumberFormat.getCurrencyInstance().format(remainingBalance));
+        }
     }
 }

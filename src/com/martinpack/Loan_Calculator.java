@@ -51,7 +51,7 @@ public class Loan_Calculator {
         float monthlyInterestRate = anualIntrestRate / PERCENT / MONTHS_IN_YEAR;
 
         double remainingBalance;
-        int paymentsMade = 1;
+        int paymentsMade = 0;
         System.out.println("\n-----------------\nPayment schedule\n-----------------");
         while (true) {
             remainingBalance = loanAmount * (Math.pow(1 + monthlyInterestRate, numberOfPayments)
